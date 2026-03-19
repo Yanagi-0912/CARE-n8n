@@ -1,0 +1,32 @@
+services:
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: Asia/Taipei
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    depends_on:
+      - local-asr
+      - local-parser
+
+  local-asr:
+    build:
+      context: ./local_asr
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./local_asr_cache:/root/.cache/huggingface
+
+  local-parser:
+    build:
+      context: ./local_parser
+    environment:
+      PARSER_MAX_FILE_SIZE_MB: ${PARSER_MAX_FILE_SIZE_MB:-20}
+    ports:
+      - "8100:8100"

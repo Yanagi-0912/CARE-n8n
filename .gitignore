@@ -1,0 +1,38 @@
+# n8n data folder
+n8n_data/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.venv/
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if needed)
+node_modules/
+
+# Docker
+docker-compose.override.yml
+
+# General
+*.log
+
+# ASR / Whisper cache
+local_asr_cache/
+
+# HuggingFace cache
+hub/
+*.bin
+*.pt
+*.model
