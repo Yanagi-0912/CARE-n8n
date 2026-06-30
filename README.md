@@ -120,3 +120,65 @@ docker compose down -v
 
 - 第一次載入 Whisper 模型會較慢，屬正常現象。
 - 若連接埠衝突，請調整 `docker-compose.yml` 的對外映射設定。
+
+## Local TTS
+
+`local-tts` is a FastAPI service for generating LINE-ready MP3 audio files.
+n8n can call this service after deciding the `language` and `voice`.
+
+Service URL:
+
+```bash
+http://localhost:8300
+```
+
+Health check:
+
+```bash
+curl http://localhost:8300/health
+```
+
+Supported voices:
+
+```bash
+curl http://localhost:8300/voices
+```
+
+Synthesize:
+
+```bash
+curl -X POST "http://localhost:8300/synthesize" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"這是 CARE 語音測試","language":"zh","voice":"default"}'
+```
+
+Response:
+
+```json
+{
+  "audio_url": "http://localhost:8300/audio/tts_xxx.mp3",
+  "duration_ms": 3000,
+  "language": "zh-tw",
+  "voice": "default",
+  "mime_type": "audio/mpeg",
+  "size_bytes": 12345
+}
+```
+
+For LINE playback, `audio_url` must be reachable by LINE over a public HTTPS URL.
+Set `TTS_PUBLIC_BASE_URL` to the public URL that routes to `local-tts`, for example:
+
+```env
+TTS_PUBLIC_BASE_URL=https://tts.example.com
+```
+
+n8n workflow contract for CARE backend:
+
+```json
+{
+  "audio_url": "https://tts.example.com/audio/tts_xxx.mp3",
+  "duration_ms": 3000,
+  "language": "zh-tw",
+  "voice": "default"
+}
+```

@@ -1,7 +1,7 @@
 services:
 
   n8n:
-    image: docker.n8n.io/n8nio/n8n
+    image: n8nio/n8n:1.121.0
     ports:
       - "5678:5678"
     environment:
@@ -11,6 +11,7 @@ services:
     depends_on:
       - local-asr
       - local-parser
+      - local-tts
 
   local-asr:
     build:
@@ -30,3 +31,16 @@ services:
       PARSER_MAX_FILE_SIZE_MB: ${PARSER_MAX_FILE_SIZE_MB:-20}
     ports:
       - "8100:8100"
+
+  local-tts:
+    build:
+      context: ./local_tts
+    environment:
+      TTS_PUBLIC_BASE_URL: ${TTS_PUBLIC_BASE_URL:-http://localhost:8300}
+      TTS_DEFAULT_LANGUAGE: ${TTS_DEFAULT_LANGUAGE:-zh}
+      TTS_DEFAULT_VOICE: ${TTS_DEFAULT_VOICE:-default}
+      TTS_FILE_TTL_SECONDS: ${TTS_FILE_TTL_SECONDS:-3600}
+    ports:
+      - "8300:8300"
+    volumes:
+      - ./local_tts_data:/data/tts

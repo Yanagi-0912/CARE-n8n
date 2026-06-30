@@ -5,14 +5,10 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-# Make local_asr/ and local_parser/ importable when pytest is launched from varying CWDs.
+# Make local service directories importable when pytest is launched from varying CWDs.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
 	sys.path.insert(0, str(PROJECT_ROOT))
-
-import local_asr.app as asr_app
-import local_parser.app as parser_app
-
 
 class FakeModel:
 	def transcribe(self, path, language=None, task="transcribe"):
@@ -26,12 +22,23 @@ class FakeModel:
 
 @pytest.fixture
 def asr_client() -> TestClient:
+	import local_asr.app as asr_app
+
 	return TestClient(asr_app.app)
 
 
 @pytest.fixture
 def parser_client() -> TestClient:
+	import local_parser.app as parser_app
+
 	return TestClient(parser_app.app)
+
+
+@pytest.fixture
+def tts_client() -> TestClient:
+	import local_tts.app as tts_app
+
+	return TestClient(tts_app.app)
 
 
 @pytest.fixture
