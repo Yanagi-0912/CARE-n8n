@@ -37,6 +37,10 @@ hub/
 *.pt
 *.model
 
+# TTS cache
+local_tts_cache/
+local_tts_data/
+
 #python cache
 __pycache__/
 *.pyc
