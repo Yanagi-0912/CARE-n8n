@@ -129,25 +129,25 @@ n8n can call this service after deciding the `language` and `voice`.
 Service URL:
 
 ```bash
-http://localhost:8300
+http://localhost:8800
 ```
 
 Health check:
 
 ```bash
-curl http://localhost:8300/health
+curl http://localhost:8800/health
 ```
 
 Supported voices:
 
 ```bash
-curl http://localhost:8300/voices
+curl http://localhost:8800/voices
 ```
 
 Synthesize:
 
 ```bash
-curl -X POST "http://localhost:8300/synthesize" \
+curl -X POST "http://localhost:8800/synthesize" \
   -H "Content-Type: application/json" \
   -d '{"text":"這是 CARE 語音測試","language":"zh","voice":"default"}'
 ```
@@ -156,7 +156,7 @@ Response:
 
 ```json
 {
-  "audio_url": "http://localhost:8300/audio/tts_xxx.mp3",
+  "audio_url": "http://localhost:8800/audio/tts_xxx.mp3",
   "duration_ms": 3000,
   "language": "zh-tw",
   "voice": "default",
