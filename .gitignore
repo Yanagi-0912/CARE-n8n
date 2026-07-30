@@ -45,3 +45,6 @@ local_tts_data/
 __pycache__/
 *.pyc
 *.pyo
+
+## documentation
+AIdocs/
