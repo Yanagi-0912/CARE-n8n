@@ -3,7 +3,7 @@
 CARE-n8n 是一套以 Docker Compose 為核心的本機自動化流程環境，整合以下能力：
 
 - n8n：流程編排與 webhook 自動化
-- Local ASR：以 FastAPI + faster-whisper 提供語音轉文字 API
+- Local ASR：以 FastAPI + Breeze-ASR-26 提供語音轉文字 API
 - Local Parser：本地解析服務（供 workflow 串接使用）
 
 此專案適合用於「先接收音訊，再經由 workflow 呼叫本地服務處理」的開發場景。
@@ -98,8 +98,13 @@ curl -X POST "http://localhost:8100/parse" \
 
 ## 常用環境變數
 
-- `WHISPER_MODEL`：預設 `small`，可改為 `tiny`、`base`、`medium`、`large-v3`
-- `WHISPER_COMPUTE_TYPE`：預設 `int8`，可依硬體改為 `float16`
+- `ASR_MODEL_ID`：預設 `MediaTek-Research/Breeze-ASR-26`
+- `ASR_DEVICE`：留空時自動選擇 `cuda:0` 或 `cpu`
+- `ASR_TORCH_DTYPE`：留空時會依裝置自動選擇，亦可指定 `float16`、`bfloat16`、`float32`
+- `ASR_CHUNK_LENGTH_SECONDS`：預設 `30`
+- `ASR_LONG_AUDIO_THRESHOLD_SECONDS`：預設 `30`，超過此秒數改走 `faster-whisper`
+- `WHISPER_MODEL`：長音檔 fallback 用的 `faster-whisper` 模型，預設 `small`
+- `WHISPER_COMPUTE_TYPE`：長音檔 fallback 的 `faster-whisper` 推論型別，預設 `int8`
 - `PARSER_MAX_FILE_SIZE_MB`：Parser 服務檔案大小限制（預設 `20`）
 
 ## 停止與清理

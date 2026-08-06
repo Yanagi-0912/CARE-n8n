@@ -5,42 +5,47 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-# Make local service directories importable when pytest is launched from varying CWDs.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
-	sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 
 class FakeModel:
-	def transcribe(self, path, language=None, task="transcribe"):
-		segments = [
-			SimpleNamespace(start=0.0, end=0.5, text="你好"),
-			SimpleNamespace(start=0.5, end=1.0, text="世界"),
-		]
-		info = SimpleNamespace(language=language or "zh", duration=1.0)
-		return segments, info
+    def transcribe(self, path, language=None, task="transcribe"):
+        segments = [
+            SimpleNamespace(start=0.0, end=0.5, text="雿末"),
+            SimpleNamespace(start=0.5, end=1.0, text="銝?"),
+        ]
+        info = SimpleNamespace(
+            language=language or "zh",
+            duration=1.0,
+            backend="fake-model",
+            model="fake-model",
+        )
+        return segments, info
 
 
 @pytest.fixture
 def asr_client() -> TestClient:
-	import local_asr.app as asr_app
+    import local_asr.app as asr_app
 
-	return TestClient(asr_app.app)
+    return TestClient(asr_app.app)
 
 
 @pytest.fixture
 def parser_client() -> TestClient:
-	import local_parser.app as parser_app
+    import local_parser.app as parser_app
 
-	return TestClient(parser_app.app)
+    return TestClient(parser_app.app)
 
 
 @pytest.fixture
 def tts_client() -> TestClient:
-	import local_tts.app as tts_app
+    import local_tts.app as tts_app
 
-	return TestClient(tts_app.app)
+    return TestClient(tts_app.app)
 
 
 @pytest.fixture
 def fake_model() -> FakeModel:
-	return FakeModel()
+    return FakeModel()

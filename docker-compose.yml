@@ -1,7 +1,7 @@
 services:
 
   n8n:
-    image: n8nio/n8n:1.123.66-amd64
+    image: docker.n8n.io/n8nio/n8n:1.123.65
     ports:
       - "5678:5678"
     environment:
@@ -17,6 +17,11 @@ services:
     build:
       context: ./local_asr
     environment:
+      ASR_MODEL_ID: ${ASR_MODEL_ID:-MediaTek-Research/Breeze-ASR-26}
+      ASR_DEVICE: ${ASR_DEVICE:-}
+      ASR_TORCH_DTYPE: ${ASR_TORCH_DTYPE:-}
+      ASR_CHUNK_LENGTH_SECONDS: ${ASR_CHUNK_LENGTH_SECONDS:-30}
+      ASR_LONG_AUDIO_THRESHOLD_SECONDS: ${ASR_LONG_AUDIO_THRESHOLD_SECONDS:-30}
       WHISPER_MODEL: ${WHISPER_MODEL:-small}
       WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
     ports:
