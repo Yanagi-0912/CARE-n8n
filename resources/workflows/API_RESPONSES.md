@@ -1,21 +1,21 @@
-# 📋 API 響應示例 & 狀態碼
+﻿# ?? API ?踵?蝷箔? & ??Ⅳ
 
-## 概述
+## 璁膩
 
-本文檔展示所有可能的 API 響應格式和對應的 HTTP 狀態碼。
+?祆?瑼?蝷箸???賜? API ?踵??澆????? HTTP ??Ⅳ??
 
 ---
 
-## 多媒體處理 API
+## 憭?擃???API
 
 ### Webhook URL
 ```
 POST http://localhost:5678/webhook/multimedia-process
 ```
 
-### ✅ 成功響應
+### ?????踵?
 
-#### 音頻/視頻轉錄成功
+#### ?喲/閬頧???
 ```json
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -24,7 +24,7 @@ Content-Type: application/json
   "status": "success",
   "type": "audio",
   "data": {
-    "text": "轉錄的文本內容",
+    "text": "頧????砍摰?,
     "confidence": 0.95,
     "language": "zh",
     "duration_seconds": 120
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 ```
 
-#### 圖片 OCR 成功
+#### ?? OCR ??
 ```json
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -42,7 +42,7 @@ Content-Type: application/json
   "status": "success",
   "type": "image",
   "data": {
-    "text": "圖片中的文字內容\n包含多行\n文字識別結果",
+    "text": "??銝剔????批捆\n?憭?\n??霅蝯?",
     "languages": [
       {
         "code": "zh",
@@ -56,7 +56,7 @@ Content-Type: application/json
 }
 ```
 
-#### 文檔解析成功
+#### ??閫????
 ```json
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -65,12 +65,12 @@ Content-Type: application/json
   "status": "success",
   "type": "document",
   "data": {
-    "text": "提取的文檔文本內容",
+    "text": "????瑼??砍摰?,
     "pages": 5,
     "format": "pdf",
     "metadata": {
-      "title": "文檔標題",
-      "author": "作者名稱",
+      "title": "??璅?",
+      "author": "雿?蝔?,
       "created": "2024-07-01"
     }
   },
@@ -78,9 +78,9 @@ Content-Type: application/json
 }
 ```
 
-### ❌ 錯誤響應
+### ???航炊?踵?
 
-#### 檔案類型不支持 (415)
+#### 瑼?憿?銝??(415)
 ```json
 HTTP/1.1 415 Unsupported Media Type
 Content-Type: application/json
@@ -98,7 +98,7 @@ Content-Type: application/json
 }
 ```
 
-#### 檔案太大 (413)
+#### 瑼?憭芸之 (413)
 ```json
 HTTP/1.1 413 Payload Too Large
 Content-Type: application/json
@@ -111,7 +111,7 @@ Content-Type: application/json
 }
 ```
 
-#### 檔案為空 (400)
+#### 瑼??箇征 (400)
 ```json
 HTTP/1.1 400 Bad Request
 Content-Type: application/json
@@ -124,7 +124,7 @@ Content-Type: application/json
 }
 ```
 
-#### 沒有副檔名 (400)
+#### 瘝??舀???(400)
 ```json
 HTTP/1.1 400 Bad Request
 Content-Type: application/json
@@ -137,7 +137,7 @@ Content-Type: application/json
 }
 ```
 
-#### 沒有上傳檔案 (400)
+#### 瘝?銝瑼? (400)
 ```json
 HTTP/1.1 400 Bad Request
 Content-Type: application/json
@@ -150,7 +150,7 @@ Content-Type: application/json
 }
 ```
 
-#### 處理超時 (504)
+#### ??頞? (504)
 ```json
 HTTP/1.1 504 Gateway Timeout
 Content-Type: application/json
@@ -163,7 +163,7 @@ Content-Type: application/json
 }
 ```
 
-#### 內部服務錯誤 (500)
+#### ?折???航炊 (500)
 ```json
 HTTP/1.1 500 Internal Server Error
 Content-Type: application/json
@@ -178,211 +178,15 @@ Content-Type: application/json
 
 ---
 
-## TTS (文本轉語音) API
-
-### Webhook URL
-```
-POST http://localhost:5678/webhook/tts
-Content-Type: application/json
-```
-
-### 📝 請求格式
-
-#### 基本請求
-```json
-{
-  "text": "你好，世界",
-  "language": "zh"
-}
-```
-
-#### 完整請求 (所有可選參數)
-```json
-{
-  "text": "你好，這是一個完整的 TTS 請求示例。",
-  "language": "zh",
-  "locale": "zh-TW",
-  "voice": "default",
-  "speed": 1.0,
-  "pitch": 1.0
-}
-```
-
-### ✅ 成功響應
-
-#### TTS 合成成功 (200)
-```json
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "success",
-  "data": {
-    "audio_url": "http://localhost:8300/audio/b5d8c4a2_1720419045.wav",
-    "duration_ms": 3500,
-    "language": "zh",
-    "voice": "default",
-    "speed": 1.0,
-    "pitch": 1.0,
-    "text_length": 25,
-    "synthesized_at": "2024-07-08T10:30:45Z"
-  }
-}
-```
-
-#### 使用自定義速度和音調
-```json
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "success",
-  "data": {
-    "audio_url": "http://localhost:8300/audio/a3f9e1c5_1720419045.wav",
-    "duration_ms": 2800,
-    "language": "zh",
-    "voice": "default",
-    "speed": 1.2,
-    "pitch": 0.9,
-    "text_length": 25,
-    "synthesized_at": "2024-07-08T10:30:45Z"
-  }
-}
-```
-
-### ❌ 錯誤響應
-
-#### 驗證失敗 - 文字為空 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Missing text parameter",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### 驗證失敗 - 文字太短 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Text must be at least 1 character(s)",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### 驗證失敗 - 文字太長 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Text exceeds maximum length of 5000 characters. Current: 5250",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### 驗證失敗 - 速度無效 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Speed must be between 0.5 and 2.0",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### 驗證失敗 - 音調無效 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Pitch must be between 0.5 and 2.0",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### 不支持的語言 (400)
-```json
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "UNSUPPORTED_LANGUAGE",
-  "message": "The requested language is not supported.",
-  "language": "en",
-  "route": "unsupported",
-  "supported_languages": ["zh", "taiwanese"],
-  "supported_locales": ["zh-TW", "zh-CN", "nan"]
-}
-```
-
-#### 語言未實現 - 台語 (501)
-```json
-HTTP/1.1 501 Not Implemented
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "TTS_NOT_IMPLEMENTED",
-  "message": "Taiwanese TTS is not implemented yet.",
-  "language": "taiwanese",
-  "estimated_release": "Q4 2024"
-}
-```
-
-#### TTS 服務超時 (504)
-```json
-HTTP/1.1 504 Gateway Timeout
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "PROCESSING_TIMEOUT",
-  "message": "TTS service request exceeded maximum time of 60 seconds",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
-#### TTS 服務錯誤 (500)
-```json
-HTTP/1.1 500 Internal Server Error
-Content-Type: application/json
-
-{
-  "status": "error",
-  "code": "PROCESSING_ERROR",
-  "message": "TTS service returned error: Connection refused",
-  "timestamp": "2024-07-08T10:30:45Z"
-}
-```
-
----
 
 ## n8n Admin API
 
-### 列表工作流
+### ?”撌乩?瘚?
 ```
 GET http://localhost:5678/api/v1/workflows
 ```
 
-#### 成功響應 (200)
+#### ???踵? (200)
 ```json
 {
   "data": [
@@ -397,24 +201,17 @@ GET http://localhost:5678/api/v1/workflows
         ...
       }
     },
-    {
-      "id": "tts-webhook",
-      "name": "tts webhook - optimized",
-      "active": false,
-      "nodes": 7,
-      "connections": {...}
-    }
   ],
   "nodesExist": true
 }
 ```
 
-### 取得單個工作流
+### ???桀極雿?
 ```
 GET http://localhost:5678/api/v1/workflows/{workflow_id}
 ```
 
-#### 成功響應 (200)
+#### ???踵? (200)
 ```json
 {
   "id": "yKC658rkbLy0I3KC",
@@ -431,12 +228,12 @@ GET http://localhost:5678/api/v1/workflows/{workflow_id}
 }
 ```
 
-### 列表工作流執行
+### ?”撌乩?瘚銵?
 ```
 GET http://localhost:5678/api/v1/workflows/{workflow_id}/executions
 ```
 
-#### 成功響應 (200)
+#### ???踵? (200)
 ```json
 {
   "data": [
@@ -457,63 +254,37 @@ GET http://localhost:5678/api/v1/workflows/{workflow_id}/executions
 
 ---
 
-## 狀態碼總結
+## ??Ⅳ蝮賜?
 
-| 代碼 | 含義 | 場景 |
+| 隞?Ⅳ | ?怎儔 | ?湔 |
 |------|------|------|
-| **200** | OK | 處理成功 |
-| **400** | Bad Request | 驗證失敗、缺少必要參數 |
-| **413** | Payload Too Large | 檔案超過大小限制 |
-| **415** | Unsupported Media Type | 不支持的檔案類型 |
-| **501** | Not Implemented | 功能暫未實現（台語TTS） |
-| **504** | Gateway Timeout | 請求超時 |
-| **500** | Internal Server Error | 內部處理錯誤 |
+| **200** | OK | ???? |
+| **400** | Bad Request | 撽?憭望??撩撠?閬???|
+| **413** | Payload Too Large | 瑼?頞?憭批?? |
+| **415** | Unsupported Media Type | 銝??瑼?憿? |
+| **504** | Gateway Timeout | 隢?頞? |
+| **500** | Internal Server Error | ?折???航炊 |
 
 ---
 
-## cURL 測試示例
+## cURL 皜祈岫蝷箔?
 
-### 測試多媒體處理
+### 皜祈岫憭?擃???
 
-#### 上傳音頻檔案
+#### 銝?喲瑼?
 ```bash
 curl -F "file=@audio.mp3" \
   http://localhost:5678/webhook/multimedia-process
 ```
 
-#### 上傳圖片檔案
+#### 銝??瑼?
 ```bash
 curl -F "file=@image.png" \
   http://localhost:5678/webhook/multimedia-process
 ```
 
-### 測試 TTS
 
-#### 基本 TTS 請求
-```bash
-curl -X POST http://localhost:5678/webhook/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "你好，這是一個測試。",
-    "language": "zh"
-  }'
-```
-
-#### 進階 TTS 請求
-```bash
-curl -X POST http://localhost:5678/webhook/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "速度快一點的測試。",
-    "language": "zh",
-    "locale": "zh-TW",
-    "speed": 1.2,
-    "pitch": 1.0
-  }' \
-  | jq '.'
-```
-
-### 獲取工作流列表
+### ?脣?撌乩?瘚?銵?
 ```bash
 curl -X GET http://localhost:5678/api/v1/workflows \
   -H "Content-Type: application/json" \
@@ -522,23 +293,23 @@ curl -X GET http://localhost:5678/api/v1/workflows \
 
 ---
 
-## 常用工具
+## 撣貊撌亙
 
 ### Postman
-- 導入: `CARE_n8n_Collection.postman_collection.json`
-- 支持: 自動環境變量、測試腳本
+- 撠: `CARE_n8n_Collection.postman_collection.json`
+- ?舀?: ?芸??啣?霈??葫閰西??
 
 ### cURL
-- 簡單和快速的測試
-- 支持所有 HTTP 方法
-- 適合腳本自動化
+- 蝪∪?翰??皜祈岫
+- ?舀????HTTP ?寞?
+- ?拙??單?芸???
 
 ### Insomnia
-- 類似 Postman 的替代品
-- 原生支援 GraphQL
-- 環境管理
+- 憿撮 Postman ?隞??
+- ???舀 GraphQL
+- ?啣?蝞∠?
 
 ---
 
-**最後更新**: 2024-07-08  
-**版本**: 2.0
+**?敺??*: 2024-07-08  
+**?**: 2.0

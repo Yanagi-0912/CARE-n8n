@@ -1,72 +1,72 @@
-# CARE-n8n
+﻿# CARE-n8n
 
-CARE-n8n 是一套以 Docker Compose 為核心的本機自動化流程環境，整合以下能力：
+CARE-n8n ?臭?憟誑 Docker Compose ?箸敹??祆??芸???蝔憓??游?隞乩??賢?嚗?
 
-- n8n：流程編排與 webhook 自動化
-- Local ASR：以 FastAPI + Breeze-ASR-26 提供語音轉文字 API
-- Local Parser：本地解析服務（供 workflow 串接使用）
+- n8n嚗?蝔楊?? webhook ?芸???
+- Local ASR嚗誑 FastAPI + Breeze-ASR-26 ??隤頧?摮?API
+- Local Parser嚗?啗圾????靘?workflow 銝脫雿輻嚗?
 
-此專案適合用於「先接收音訊，再經由 workflow 呼叫本地服務處理」的開發場景。
+甇文?獢??潦??交?唾?嚗?蝬 workflow ?澆?砍????????湔??
 
-## 快速簡介
+## 敹恍陛隞?
 
-目前 `docker-compose.yml` 主要服務與連接埠如下：
+?桀? `docker-compose.yml` 銝餉???????銝?
 
-- `n8n`：`http://localhost:5678`
-- `local-asr`：`http://localhost:8200`
-- `local-parser`：`http://localhost:8100`
+- `n8n`嚗http://localhost:5678`
+- `local-asr`嚗http://localhost:8200`
+- `local-parser`嚗http://localhost:8100`
 
-## 專案結構
+## 撠?蝯?
 
-- `docker-compose.yml`：整體服務編排
-- `local_asr/`：ASR 服務（FastAPI）
-- `local_parser/`：Parser 服務
-- `local_asr_cache/`：Whisper/Hugging Face 模型快取
-- `n8n_data/`：n8n 設定、資料與 workflows
+- `docker-compose.yml`嚗擃??楊??
+- `local_asr/`嚗SR ??嚗astAPI嚗?
+- `local_parser/`嚗arser ??
+- `local_asr_cache/`嚗hisper/Hugging Face 璅∪?敹怠?
+- `n8n_data/`嚗8n 閮剖????? workflows
 
-## 開發指引
+## ???
 
-### 1. 先決條件
+### 1. ?捱璇辣
 
-- 已安裝 Docker Desktop
-- 可使用 `docker compose` 指令
+- 撌脣?鋆?Docker Desktop
+- ?臭蝙??`docker compose` ?誘
 
-### 2. 啟動環境
+### 2. ???啣?
 
-在專案根目錄執行：
+?典?獢?桅??瑁?嚗?
 
 ```bash
 docker compose up -d
 ```
 
-查看狀態：
+?亦????
 
 ```bash
 docker compose ps
 docker compose logs -f
 ```
 
-### 3. 先匯入 workflow，再開始使用
+### 3. ???workflow嚗???雿輻
 
-第一次啟動或新環境部署時，請先在 n8n UI 匯入 workflow，再進行 webhook 或 API 測試。
+蝚砌?甈∪????啁憓蝵脫?嚗?? n8n UI ?臬 workflow嚗??脰? webhook ??API 皜祈岫??
 
-1. 開啟 `http://localhost:5678`
-2. 進入 n8n 的 workflow 匯入頁面（Import）
-3. 匯入專案提供的 workflow JSON
-4. 啟用 workflow（Active）
-5. 再用 curl 或其他 client 呼叫 webhook
+1. ?? `http://localhost:5678`
+2. ?脣 n8n ??workflow ?臬?嚗mport嚗?
+3. ?臬撠?????workflow JSON
+4. ? workflow嚗ctive嚗?
+5. ? curl ?隞?client ?澆 webhook
 
-> 若尚未匯入 workflow，webhook URL 可能不存在或回傳非預期結果。
+> ?亙??芸??workflow嚗ebhook URL ?航銝??冽????????
 
-### 4. 本地服務驗證
+### 4. ?砍??撽?
 
-ASR 健康檢查：
+ASR ?亙熒瑼Ｘ嚗?
 
 ```bash
 curl http://localhost:8200/health
 ```
 
-ASR 轉錄測試：
+ASR 頧?皜祈岫嚗?
 
 ```bash
 curl -X POST "http://localhost:8200/transcribe" \
@@ -75,19 +75,19 @@ curl -X POST "http://localhost:8200/transcribe" \
   -F "task=transcribe"
 ```
 
-Parser 健康檢查：
+Parser ?亙熒瑼Ｘ嚗?
 
 ```bash
 curl http://localhost:8100/health
 ```
 
-Parser 支援格式查詢：
+Parser ?舀?澆??亥岷嚗?
 
 ```bash
 curl http://localhost:8100/supported-types
 ```
 
-Parser 解析測試：
+Parser 閫??皜祈岫嚗?
 
 ```bash
 curl -X POST "http://localhost:8100/parse" \
@@ -96,94 +96,33 @@ curl -X POST "http://localhost:8100/parse" \
   -F "source=manual-test"
 ```
 
-## 常用環境變數
+## 撣貊?啣?霈
 
-- `ASR_MODEL_ID`：預設 `MediaTek-Research/Breeze-ASR-26`
-- `ASR_DEVICE`：留空時自動選擇 `cuda:0` 或 `cpu`
-- `ASR_TORCH_DTYPE`：留空時會依裝置自動選擇，亦可指定 `float16`、`bfloat16`、`float32`
-- `ASR_CHUNK_LENGTH_SECONDS`：預設 `30`
-- `ASR_LONG_AUDIO_THRESHOLD_SECONDS`：預設 `30`，超過此秒數改走 `faster-whisper`
-- `WHISPER_MODEL`：長音檔 fallback 用的 `faster-whisper` 模型，預設 `small`
-- `WHISPER_COMPUTE_TYPE`：長音檔 fallback 的 `faster-whisper` 推論型別，預設 `int8`
-- `PARSER_MAX_FILE_SIZE_MB`：Parser 服務檔案大小限制（預設 `20`）
+- `ASR_BACKEND`嚗ocker ?身 `faster-whisper`嚗閬?單?雿輻 Breeze-ASR-26嚗閮剔 `hybrid`
+- `ASR_MODEL_ID`嚗?閮?`MediaTek-Research/Breeze-ASR-26`
+- `ASR_DEVICE`嚗?蝛箸??芸??豢? `cuda:0` ??`cpu`
+- `ASR_TORCH_DTYPE`嚗?蝛箸???鋆蔭?芸??豢?嚗漲?舀?摰?`float16`?bfloat16`?float32`
+- `ASR_CHUNK_LENGTH_SECONDS`嚗?閮?`30`
+- `ASR_LONG_AUDIO_THRESHOLD_SECONDS`嚗?閮?`30`嚗??迨蝘?寡粥 `faster-whisper`
+- `WHISPER_MODEL`嚗?單? fallback ?函? `faster-whisper` 璅∪?嚗?閮?`small`
+- `WHISPER_COMPUTE_TYPE`嚗?單? fallback ??`faster-whisper` ?刻??嚗?閮?`int8`
+- `PARSER_MAX_FILE_SIZE_MB`嚗arser ??瑼?憭批??嚗?閮?`20`嚗?
+## ?迫????
 
-## 停止與清理
-
-停止服務：
+?迫??嚗?
 
 ```bash
 docker compose down
 ```
 
-連同 volume 一起清除（會刪除資料）：
+??? volume 銝韏瑟??歹???方???嚗?
 
 ```bash
 docker compose down -v
 ```
 
-## 備註
+## ?酉
 
-- 第一次載入 Whisper 模型會較慢，屬正常現象。
-- 若連接埠衝突，請調整 `docker-compose.yml` 的對外映射設定。
+- 蝚砌?甈∟???Whisper 璅∪????ｇ?撅祆迤撣貊鞊～?
+- ?仿???蝒?隢矽??`docker-compose.yml` ??憭?撠身摰?
 
-## Local TTS
-
-`local-tts` is a FastAPI service for generating LINE-ready MP3 audio files.
-n8n can call this service after deciding the `language` and `voice`.
-
-Service URL:
-
-```bash
-http://localhost:8800
-```
-
-Health check:
-
-```bash
-curl http://localhost:8800/health
-```
-
-Supported voices:
-
-```bash
-curl http://localhost:8800/voices
-```
-
-Synthesize:
-
-```bash
-curl -X POST "http://localhost:8800/synthesize" \
-  -H "Content-Type: application/json" \
-  -d '{"text":"這是 CARE 語音測試","language":"zh","voice":"default"}'
-```
-
-Response:
-
-```json
-{
-  "audio_url": "http://localhost:8800/audio/tts_xxx.mp3",
-  "duration_ms": 3000,
-  "language": "zh-tw",
-  "voice": "default",
-  "mime_type": "audio/mpeg",
-  "size_bytes": 12345
-}
-```
-
-For LINE playback, `audio_url` must be reachable by LINE over a public HTTPS URL.
-Set `TTS_PUBLIC_BASE_URL` to the public URL that routes to `local-tts`, for example:
-
-```env
-TTS_PUBLIC_BASE_URL=https://tts.example.com
-```
-
-n8n workflow contract for CARE backend:
-
-```json
-{
-  "audio_url": "https://tts.example.com/audio/tts_xxx.mp3",
-  "duration_ms": 3000,
-  "language": "zh-tw",
-  "voice": "default"
-}
-```

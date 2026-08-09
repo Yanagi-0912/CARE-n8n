@@ -40,12 +40,5 @@ def parser_client() -> TestClient:
 
 
 @pytest.fixture
-def tts_client() -> TestClient:
-    import local_tts.app as tts_app
-
-    return TestClient(tts_app.app)
-
-
-@pytest.fixture
 def fake_model() -> FakeModel:
     return FakeModel()

@@ -1,346 +1,236 @@
-# n8n Workflows Optimization Guide
+﻿# n8n Workflows Optimization Guide
 
-## 📝 Overview
-本文檔說明對 CARE 應用 n8n 工作流的優化改進。包括兩個主要工作流：
-- **Multimedia Process** - 多媒體檔案處理（音頻、視頻、圖片、文檔）
-- **TTS Webhook** - 文本轉語音服務
+## ?? Overview
+?祆?瑼牧?? CARE ? n8n 撌乩?瘚??芸??寥脯??砍?蜓閬極雿?嚗?
+- **Multimedia Process** - 憭?擃?獢????喲???颯???瑼?
 
 ---
 
-## 🎯 優化的改進
+## ? ?芸????
 
-### 1️⃣ Multimedia Process Workflow
+### 1儭 Multimedia Process Workflow
 
-#### 主要改進：
+#### 銝餉??寥莎?
 
-| 改進項目 | 舊版 | 優化版 |
+| ?寥脤???| ?? | ?芸???|
 |--------|------|--------|
-| **檔案驗證** | ❌ 無檔案大小檢查 | ✅ 支援最大100MB檔案驗證 |
-| **錯誤處理** | ❌ 基礎 | ✅ 完整的錯誤處理流程 |
-| **Gemini Model** | ✅ robotics-er-1.5-preview | ✅ gemini-2.0-flash-lite（更快） |
-| **超時設定** | ❌ 無 | ✅ ASR: 300秒，Parser: 120秒 |
-| **重試機制** | ❌ 無 | ✅ ASR最多重試3次 |
-| **響應格式** | ⚠️ 不一致 | ✅ 統一的JSON格式 |
-| **日誌記錄** | ❌ 無 | ✅ 添加時間戳和檔案元數據 |
+| **瑼?撽?** | ???⊥?獢之撠炎??| ???舀?憭?00MB瑼?撽? |
+| **?航炊??** | ???箇? | ??摰?隤方???蝔?|
+| **Gemini Model** | ??robotics-er-1.5-preview | ??gemini-2.0-flash-lite嚗敹恬? |
+| **頞?閮剖?** | ????| ??ASR: 300蝘?Parser: 120蝘?|
+| **?岫璈** | ????| ??ASR?憭?閰?甈?|
+| **?踵??澆?** | ?? 銝???| ??蝯曹??SON?澆? |
+| **?亥?閮?** | ????| ??瘛餃????喳?瑼????|
 
-#### 詳細變更：
+#### 閰喟敦霈嚗?
 
-**檔案驗證節點 (Validate & Parse File)**
+**瑼?撽?蝭暺?(Validate & Parse File)**
 ```javascript
-// 新增功能：
-- 檔案大小驗證 (100MB限制)
-- 空檔案檢測
-- 副檔名必需
-- 檔案支援類型預檢
-- 添加元數據: fileSize, timestamp
+// ?啣??嚗?
+- 瑼?憭批?撽? (100MB?)
+- 蝛箸?獢炎皜?
+- ?舀????
+- 瑼??舀憿??炎
+- 瘛餃???? fileSize, timestamp
 ```
 
-**響應格式統一化**
+**?踵??澆?蝯曹???*
 ```json
-// 所有成功響應格式：
+// ?????撘?
 {
   "status": "success",
   "type": "audio|image|document",
-  "data": { /* 具體結果 */ },
+  "data": { /* ?琿?蝯? */ },
   "processedAt": "2024-07-08T10:30:00Z"
 }
 
-// 所有錯誤響應格式：
+// ??隤日?撘?
 {
   "status": "error",
   "code": "ERROR_CODE",
-  "message": "詳細錯誤信息",
+  "message": "閰喟敦?航炊靽⊥",
   "timestamp": "2024-07-08T10:30:00Z"
 }
 ```
 
-**HTTP 請求優化**
-- ASR: 添加 5 分鐘超時 + 3 次重試
-- Parser: 添加 2 分鐘超時
-- 統一的 Content-Type 配置
+**HTTP 隢??芸?**
+- ASR: 瘛餃? 5 ??頞? + 3 甈⊿?閰?
+- Parser: 瘛餃? 2 ??頞?
+- 蝯曹???Content-Type ?蔭
 
 ---
 
-### 2️⃣ TTS Webhook Workflow
 
-#### 主要改進：
+## ?? 雿輻 Postman 皜祈岫
 
-| 改進項目 | 舊版 | 優化版 |
-|--------|------|--------|
-| **文字驗證** | ❌ 無長度限制 | ✅ 1-5000字符驗證 |
-| **參數驗證** | ⚠️ 基礎 | ✅ speed(0.5-2.0), pitch(0.5-2.0) |
-| **請求緩存** | ❌ 無 | ✅ MD5 hash 用於去重 |
-| **錯誤消息** | ⚠️ 簡略 | ✅ 詳細的支援信息 |
-| **超時設定** | ❌ 無 | ✅ 60秒超時 + 2次重試 |
-| **響應結構** | ⚠️ 不一致 | ✅ 統一格式 |
+### 撠?孵?
 
-#### 詳細變更：
+1. ?? Postman
+2. 暺? `Import` 
+3. ?豢? `CARE_n8n_Collection.postman_collection.json`
+4. 摰?撠
 
-**驗證與規範化 (Validate & Normalize TTS Request)**
-```javascript
-// 新增功能：
-- 文字長度驗證 (1-5000字符)
-- Speed 驗證 (0.5-2.0)
-- Pitch 驗證 (0.5-2.0)
-- 請求去重 (MD5 hash)
-- 語言自動偵測改進
-- 時間戳記錄
-```
+### 皜祈岫甇仿?
 
-**請求示例**
-```json
-// 基本請求
-{
-  "text": "你好，這是一個測試。",
-  "language": "zh",
-  "voice": "default"
-}
-
-// 進階請求
-{
-  "text": "複雜的文本內容",
-  "language": "zh",
-  "locale": "zh-TW",
-  "voice": "default",
-  "speed": 1.2,
-  "pitch": 1.0
-}
-```
-
-**響應示例**
-```json
-// 成功響應
-{
-  "status": "success",
-  "data": {
-    "audio_url": "http://localhost:8300/audio/...",
-    "duration_ms": 3500,
-    "language": "zh",
-    "voice": "default",
-    "text_length": 50,
-    "synthesized_at": "2024-07-08T10:30:00Z"
-  }
-}
-
-// 驗證錯誤
-{
-  "status": "error",
-  "code": "VALIDATION_ERROR",
-  "message": "Text exceeds maximum length of 5000 characters. Current: 5500",
-  "timestamp": "2024-07-08T10:30:00Z"
-}
-```
-
----
-
-## 🚀 使用 Postman 測試
-
-### 導入方式
-
-1. 打開 Postman
-2. 點擊 `Import` 
-3. 選擇 `CARE_n8n_Collection.postman_collection.json`
-4. 完成導入
-
-### 測試步驟
-
-#### 測試多媒體處理
+#### 皜祈岫憭?擃???
 ```bash
 1. Multimedia Processing > Process Audio File (ASR)
-   - 選擇您的 .mp3 或 .wav 檔案
-   - 按 Send
+   - ?豢??函? .mp3 ??.wav 瑼?
+   - ??Send
 
-2. 預期響應 (200 OK)
+2. ???踵? (200 OK)
 {
   "status": "success",
   "type": "audio",
   "data": {
-    "text": "轉錄的文本...",
+    "text": "頧?????..",
     "confidence": 0.95
   },
   "processedAt": "2024-07-08T10:30:00Z"
 }
 ```
 
-#### 測試 TTS
-```bash
-1. TTS > Chinese TTS - Basic
-   - 修改 "text" 欄位為您要的文字
-   - 按 Send
-
-2. 預期響應 (200 OK)
-{
-  "status": "success",
-  "data": {
-    "audio_url": "http://localhost:8300/audio/...",
-    "duration_ms": 2500,
-    "language": "zh",
-    "voice": "default"
-  }
-}
-```
 
 ---
 
-## 📊 效能改進
+## ?? ??寥?
 
-### 預期效果
+### ????
 
-| 指標 | 改進幅度 |
+| ?? | ?寥脣?摨?|
 |-----|--------|
-| **錯誤捕獲率** | 提升 85% |
-| **可靠性** | 提升 40% (重試機制) |
-| **響應一致性** | 提升 100% |
-| **故障排查時間** | 降低 60% (清晰的錯誤信息) |
+| **?航炊???* | ?? 85% |
+| **?舫???* | ?? 40% (?岫璈) |
+| **?踵?銝?湔?* | ?? 100% |
+| **?????** | ?? 60% (皜?隤支縑?? |
 
-### 資源使用
+### 鞈?雿輻
 
 ```
-ASR 服務 (local-asr:8200)
-- 支援檔案大小: 100MB
-- 超時時間: 5分鐘
-- 重試次數: 3次
+ASR ?? (local-asr:8200)
+- ?舀瑼?憭批?: 100MB
+- 頞???: 5??
+- ?岫甈⊥: 3甈?
 
-Parser 服務 (local-parser:8100)
-- 支援檔案大小: 100MB
-- 超時時間: 2分鐘
-- 重試次數: 1次
+Parser ?? (local-parser:8100)
+- ?舀瑼?憭批?: 100MB
+- 頞???: 2??
+- ?岫甈⊥: 1甈?
 
-TTS 服務 (local-tts:8300)
-- 文字上限: 5000字符
-- 超時時間: 1分鐘
-- 重試次數: 2次
 ```
 
 ---
 
-## 🔄 遷移指南
+## ?? ?瑞宏??
 
-### 步驟 1: 備份舊工作流
+### 甇仿? 1: ?遢?極雿?
 ```bash
-# 原文件保留
-- mutimedia process.json (舊版)
-- tts webhook.json (舊版)
+# ??隞嗡???
+- mutimedia process.json (??)
 ```
 
-### 步驟 2: 導入新工作流
-1. 在 n8n UI 中
-2. 右上角 → Import
-3. 選擇 `multimedia_process_optimized.json`
-4. 完成導入
+### 甇仿? 2: 撠?啣極雿?
+1. ??n8n UI 銝?
+2. ?喃?閫???Import
+3. ?豢? `multimedia_process_optimized.json`
+4. 摰?撠
 
-### 步驟 3: 驗證新工作流
-1. 使用 Postman Collection 測試
-2. 檢查日誌輸出
-3. 對比舊版本結果
+### 甇仿? 3: 撽??啣極雿?
+1. 雿輻 Postman Collection 皜祈岫
+2. 瑼Ｘ?亥?頛詨
+3. 撠????祉???
 
-### 步驟 4: 啟用新工作流
-1. 停用舊工作流
-2. 啟用新工作流
-3. 監測執行情況
+### 甇仿? 4: ??啣極雿?
+1. ??極雿?
+2. ??啣極雿?
+3. ??葫?瑁???
 
 ---
 
-## ⚠️ 注意事項
+## ?? 瘜冽?鈭?
 
-### TTS 服務
-- **台語支援**: 目前返回 501 Not Implemented
-- **預計完成**: Q4 2024
-- **臨時解決**: 可使用中文合成作為替代
 
-### 檔案大小限制
-- **最大檔案**: 100MB
-- **建議大小**: < 50MB 以獲得最佳效能
+### 瑼?憭批??
+- **?憭扳?獢?*: 100MB
+- **撱箄降憭批?**: < 50MB 隞亦敺?雿單???
 
-### 語言支援
+### 隤??舀
 ```
-當前支援:
-✅ 中文 (Mandarin)
-  - 代碼: zh, zh-TW, zh-CN
+?嗅??舀:
+??銝剜? (Mandarin)
+  - 隞?Ⅳ: zh, zh-TW, zh-CN
   - Locale: zh-TW, zh-CN
 
-⏳ 即將支援:
-- 台語 (Taiwanese)
-- 其他語言
+???喳??舀:
+- ?啗? (Taiwanese)
+- ?嗡?隤?
 ```
 
 ---
 
-## 📝 新增的錯誤代碼
+## ?? ?啣??隤支誨蝣?
 
 ### Multimedia Processing
 
-| 代碼 | HTTP | 描述 |
+| 隞?Ⅳ | HTTP | ?膩 |
 |-----|------|------|
-| `UNSUPPORTED_FILE_TYPE` | 415 | 不支持的檔案類型 |
-| `FILE_TOO_LARGE` | 413 | 檔案超過100MB |
-| `FILE_EMPTY` | 400 | 檔案為空 |
-| `NO_EXTENSION` | 400 | 檔案沒有副檔名 |
-| `PROCESSING_ERROR` | 500 | 處理錯誤 |
+| `UNSUPPORTED_FILE_TYPE` | 415 | 銝??瑼?憿? |
+| `FILE_TOO_LARGE` | 413 | 瑼?頞?100MB |
+| `FILE_EMPTY` | 400 | 瑼??箇征 |
+| `NO_EXTENSION` | 400 | 瑼?瘝??舀???|
+| `PROCESSING_ERROR` | 500 | ???航炊 |
 
-### TTS
-
-| 代碼 | HTTP | 描述 |
-|-----|------|------|
-| `VALIDATION_ERROR` | 400 | 輸入驗證失敗 |
-| `TEXT_TOO_LONG` | 400 | 文本超過5000字符 |
-| `UNSUPPORTED_LANGUAGE` | 400 | 不支持的語言 |
-| `TTS_NOT_IMPLEMENTED` | 501 | 語言暫未實現 |
-| `PROCESSING_ERROR` | 500 | 處理錯誤 |
 
 ---
 
-## 🔧 本機開發調試
+## ? ?祆??隤輯岫
 
-### 檢查服務狀態
+### 瑼Ｘ?????
 ```bash
-# 檢查 n8n
+# 瑼Ｘ n8n
 curl http://localhost:5678/api/v1/workflows
 
-# 檢查 ASR
+# 瑼Ｘ ASR
 curl http://localhost:8200/health
 
-# 檢查 Parser
+# 瑼Ｘ Parser
 curl http://localhost:8100/health
 
-# 檢查 TTS
-curl http://localhost:8300/health
 ```
 
-### 查看 n8n 日誌
+### ?亦? n8n ?亥?
 ```bash
 docker logs -f care-n8n-1
 ```
 
-### 查看工作流執行日誌
-1. n8n UI > 工作流 > 執行歷史
-2. 點擊執行紀錄查看詳情
+### ?亦?撌乩?瘚銵隤?
+1. n8n UI > 撌乩?瘚?> ?瑁?甇瑕
+2. 暺??瑁?蝝??底??
 
 ---
 
-## ✅ 測試檢查清單
+## ??皜祈岫瑼Ｘ皜
 
-- [ ] ASR 服務能轉錄音頻
-- [ ] Parser 服務能解析文檔
-- [ ] Gemini API 能識別圖片文字
-- [ ] TTS 能生成中文語音
-- [ ] 錯誤處理返回正確的狀態碼
-- [ ] 響應格式一致
-- [ ] 超時機制工作正常
-- [ ] 重試機制工作正常
-
----
-
-## 📞 支援聯繫
-
-如有問題，請檢查：
-1. 服務連接 (docker-compose up -d)
-2. 檔案格式和大小
-3. n8n 日誌輸出
-4. API 端點 URL 正確性
+- [ ] ASR ???質????
+- [ ] Parser ???質圾??瑼?
+- [ ] Gemini API ?質??亙???摮?
+- [ ] ?航炊??餈?甇?Ⅱ???Ⅳ
+- [ ] ?踵??澆?銝??
+- [ ] 頞?璈撌乩?甇?虜
+- [ ] ?岫璈撌乩?甇?虜
 
 ---
 
-**最後更新**: 2024-07-08
-**版本**: 2.0 (Optimized)
-**狀態**: ✅ 生產就緒
+## ?? ?舀?舐鼠
+
+憒???嚗?瑼Ｘ嚗?
+1. ???? (docker-compose up -d)
+2. 瑼??澆??之撠?
+3. n8n ?亥?頛詨
+4. API 蝡舫? URL 甇?Ⅱ??
+
+---
+
+**?敺??*: 2024-07-08
+**?**: 2.0 (Optimized)
+**???*: ???撠梁?
