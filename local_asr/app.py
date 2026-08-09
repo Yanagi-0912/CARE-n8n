@@ -9,6 +9,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 app = FastAPI(title="Local ASR", version="2.1.0")
 
 DEFAULT_MODEL_ID = "MediaTek-Research/Breeze-ASR-26"
+DEFAULT_ASR_BACKEND = "hybrid"
 DEFAULT_CHUNK_LENGTH_SECONDS = 30
 DEFAULT_LONG_AUDIO_THRESHOLD_SECONDS = 30.0
 DEFAULT_WHISPER_MODEL = "small"
@@ -142,14 +143,22 @@ class FasterWhisperAsrModel:
 
 class HybridAsrModel:
     def __init__(self) -> None:
+        self.backend = os.getenv("ASR_BACKEND", DEFAULT_ASR_BACKEND).strip().lower()
         self.long_audio_threshold_seconds = float(
             os.getenv(
                 "ASR_LONG_AUDIO_THRESHOLD_SECONDS",
                 str(DEFAULT_LONG_AUDIO_THRESHOLD_SECONDS),
             )
         )
-        self._short_model = BreezeAsrModel()
+        self._short_model = None
         self._long_model: Optional[FasterWhisperAsrModel] = None
+        if self.backend != "faster-whisper":
+            self._short_model = BreezeAsrModel()
+
+    def _get_faster_whisper_model(self) -> FasterWhisperAsrModel:
+        if self._long_model is None:
+            self._long_model = FasterWhisperAsrModel()
+        return self._long_model
 
     def transcribe(
         self,
@@ -158,10 +167,11 @@ class HybridAsrModel:
         task: str = "transcribe",
     ) -> tuple[list[SimpleNamespace], SimpleNamespace]:
         duration_seconds = get_audio_duration_seconds(path)
-        if duration_seconds > self.long_audio_threshold_seconds:
-            if self._long_model is None:
-                self._long_model = FasterWhisperAsrModel()
-            segments, info = self._long_model.transcribe(
+        if (
+            self.backend == "faster-whisper"
+            or duration_seconds > self.long_audio_threshold_seconds
+        ):
+            segments, info = self._get_faster_whisper_model().transcribe(
                 path,
                 language=language,
                 task=task,
@@ -169,6 +179,8 @@ class HybridAsrModel:
             if not getattr(info, "duration", None):
                 info.duration = duration_seconds
             return segments, info
+        if self._short_model is None:
+            self._short_model = BreezeAsrModel()
         return self._short_model.transcribe(path, language=language, task=task)
 
 
@@ -211,6 +223,7 @@ def get_model() -> HybridAsrModel:
 def health() -> dict:
     return {
         "ok": True,
+        "backend": os.getenv("ASR_BACKEND", DEFAULT_ASR_BACKEND),
         "model": os.getenv("ASR_MODEL_ID", DEFAULT_MODEL_ID),
         "long_audio_backend": "faster-whisper",
         "long_audio_threshold_seconds": float(
