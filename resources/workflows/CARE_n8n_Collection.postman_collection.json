@@ -1,0 +1,221 @@
+﻿{
+  "info": {
+    "name": "CARE n8n Workflows",
+    "description": "Collection for testing n8n workflows - Multimedia Processing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0"
+  },
+  "item": [
+    {
+      "name": "Multimedia Processing",
+      "item": [
+        {
+          "name": "Test Webhook Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5678/api/v1/workflows",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["api", "v1", "workflows"]
+            },
+            "description": "Check n8n connection and list all workflows"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Audio File (ASR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/audio.mp3",
+                  "description": "Audio file: mp3, wav, m4a, flac, ogg, opus"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5678/webhook/multimedia-process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["webhook", "multimedia-process"]
+            },
+            "description": "Send audio file for ASR transcription"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Video File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/video.mp4",
+                  "description": "Video file: mp4, mov, avi, mkv, webm"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5678/webhook/multimedia-process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["webhook", "multimedia-process"]
+            },
+            "description": "Send video file for processing"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Image File (OCR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/image.png",
+                  "description": "Image file: jpg, jpeg, png, gif, bmp, tiff, webp, svg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5678/webhook/multimedia-process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["webhook", "multimedia-process"]
+            },
+            "description": "Send image file for OCR text extraction"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Document File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/document.pdf",
+                  "description": "Document file: txt, md, csv, json, pdf, docx, xlsx, pptx, html, htm"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5678/webhook/multimedia-process",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["webhook", "multimedia-process"]
+            },
+            "description": "Send document file for parsing"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "n8n API",
+      "item": [
+        {
+          "name": "List All Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5678/api/v1/workflows",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["api", "v1", "workflows"]
+            },
+            "description": "Get list of all workflows in n8n"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workflow Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5678/api/v1/workflows/{{workflow_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["api", "v1", "workflows", "{{workflow_id}}"]
+            },
+            "description": "Get details of specific workflow (replace {{workflow_id}} with actual ID)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Workflow Executions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5678/api/v1/workflows/{{workflow_id}}/executions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5678",
+              "path": ["api", "v1", "workflows", "{{workflow_id}}", "executions"]
+            },
+            "description": "Get execution history for a workflow"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "workflow_id",
+      "value": "yKC658rkbLy0I3KC",
+      "type": "string",
+      "description": "Replace with actual workflow ID"
+    }
+  ]
+}
+

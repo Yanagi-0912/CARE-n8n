@@ -41,3 +41,6 @@ hub/
 __pycache__/
 *.pyc
 *.pyo
+
+## documentation
+AIdocs/
