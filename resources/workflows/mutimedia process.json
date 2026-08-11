@@ -205,9 +205,9 @@
         "operation": "analyze",
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-robotics-er-1.5-preview",
+          "value": "models/gemini-2.5-flash",
           "mode": "list",
-          "cachedResultName": "models/gemini-robotics-er-1.5-preview"
+          "cachedResultName": "models/gemini-2.5-flash"
         },
         "text": "You are an OCR extraction engine.\n\nExtract all visible text from the provided image.\n\nIMPORTANT:\n- Output MUST be valid JSON.\n- Do NOT include any explanation, markdown, or extra text.\n- Do NOT wrap the JSON in code blocks.\n- The response must start with \"{\" and end with \"}\".\n\nReturn exactly this structure:\n\n{\n  \"text\": \"<extracted text>\",\n  \"languages\": [\n    {\"code\": \"<ISO 639-1>\", \"confidence\": 0.0}\n  ],\n  \"primary_language\": \"<ISO 639-1 or 'mixed'>\"\n}\n\nRules:\n- Preserve original formatting (line breaks, spacing, punctuation) as much as possible.\n- If no text is found, set \"text\" to an empty string \"\" and \"languages\" to [].\n- Detect all languages present using ISO 639-1 codes (e.g., \"en\", \"zh\", \"ja\").\n- Confidence must be a float between 0.0 and 1.0.\n- If one language is dominant, set it as \"primary_language\".\n- If multiple languages with no clear dominance, set \"primary_language\" to \"mixed\".\n- Do not hallucinate text that is not visible in the image.",
         "inputType": "binary",
