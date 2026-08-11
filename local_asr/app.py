@@ -1,4 +1,5 @@
 import os
+import logging
 import subprocess
 import tempfile
 from types import SimpleNamespace
@@ -7,6 +8,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI(title="Local ASR", version="2.1.0")
+logger = logging.getLogger("local_asr")
 
 DEFAULT_MODEL_ID = "MediaTek-Research/Breeze-ASR-26"
 DEFAULT_ASR_BACKEND = "hybrid"
@@ -72,6 +74,13 @@ class BreezeAsrModel:
             torch_dtype=self.torch_dtype,
             device=pipeline_device,
         )
+        logger.info(
+            "Breeze ASR initialized model=%s device=%s dtype=%s chunk_length_s=%s",
+            self.model_id,
+            self.device_name,
+            self.torch_dtype,
+            self.chunk_length_s,
+        )
 
     def transcribe(
         self,
@@ -117,6 +126,11 @@ class FasterWhisperAsrModel:
             "WHISPER_COMPUTE_TYPE", DEFAULT_WHISPER_COMPUTE_TYPE
         )
         self._model = WhisperModel(self.model_size, compute_type=self.compute_type)
+        logger.info(
+            "faster-whisper initialized model=%s compute_type=%s",
+            self.model_size,
+            self.compute_type,
+        )
 
     def transcribe(
         self,
@@ -171,6 +185,12 @@ class HybridAsrModel:
             self.backend == "faster-whisper"
             or duration_seconds > self.long_audio_threshold_seconds
         ):
+            logger.info(
+                "ASR routing to faster-whisper backend=%s audio_duration=%.3fs threshold=%.3fs",
+                self.backend,
+                duration_seconds,
+                self.long_audio_threshold_seconds,
+            )
             segments, info = self._get_faster_whisper_model().transcribe(
                 path,
                 language=language,
@@ -181,6 +201,12 @@ class HybridAsrModel:
             return segments, info
         if self._short_model is None:
             self._short_model = BreezeAsrModel()
+        logger.info(
+            "ASR routing to Breeze backend=%s audio_duration=%.3fs threshold=%.3fs",
+            self.backend,
+            duration_seconds,
+            self.long_audio_threshold_seconds,
+        )
         return self._short_model.transcribe(path, language=language, task=task)
 
 
@@ -265,13 +291,25 @@ async def transcribe(
                 }
             )
 
+        text = "".join(text_parts).strip()
+        backend = getattr(info, "backend", "breeze-asr-26")
+        model_name = getattr(info, "model", os.getenv("ASR_MODEL_ID", DEFAULT_MODEL_ID))
+        logger.info(
+            "ASR transcribed backend=%s model=%s language=%s duration=%.3fs text=%r",
+            backend,
+            model_name,
+            info.language,
+            float(info.duration or 0.0),
+            text,
+        )
+
         return {
-            "text": "".join(text_parts).strip(),
+            "text": text,
             "language": info.language,
             "duration": info.duration,
             "segments": segment_list,
-            "model": getattr(info, "model", os.getenv("ASR_MODEL_ID", DEFAULT_MODEL_ID)),
-            "backend": getattr(info, "backend", "breeze-asr-26"),
+            "model": model_name,
+            "backend": backend,
         }
     finally:
         if os.path.exists(tmp_path):
