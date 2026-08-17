@@ -1,5 +1,4 @@
 {
-  "name": "multimedia process - optimized",
   "nodes": [
     {
       "parameters": {
@@ -11,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -912,
-        192
+        -736,
+        464
       ],
-      "id": "8b45e6ba-6669-473c-913f-4972a6157694",
+      "id": "ed3d97e6-6c68-4de2-9ac8-900a09c87bc3",
       "name": "Webhook",
       "webhookId": "multimedia-process",
       "alwaysOutputData": false
@@ -30,10 +29,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        496,
-        176
+        672,
+        448
       ],
-      "id": "970d9f74-363a-47bd-b611-3ee2dee762a2",
+      "id": "ee0838bb-b4b1-4d47-84b9-be04866a2642",
       "name": "Respond to Webhook"
     },
     {
@@ -43,10 +42,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -720,
-        192
+        -544,
+        464
       ],
-      "id": "cdb261f3-0408-41ab-87d2-9d0ff09f6714",
+      "id": "4dda9c2a-c294-417b-9a61-a62366654e46",
       "name": "Code in JavaScript"
     },
     {
@@ -150,10 +149,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        -448,
-        144
+        -272,
+        416
       ],
-      "id": "e24b021e-e027-4e2f-9512-409a465eaada",
+      "id": "988e7107-b2c8-4669-b95f-c7fccdb51999",
       "name": "Switch"
     },
     {
@@ -176,10 +175,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        0,
-        0
+        176,
+        272
       ],
-      "id": "04ae5dfd-616b-4d70-9696-663465cd4881",
+      "id": "f102e9b9-9874-4acd-a920-71573b2f5348",
       "name": "HTTP Request"
     },
     {
@@ -193,10 +192,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        0,
-        416
+        176,
+        688
       ],
-      "id": "4f7f8a0e-d7de-4348-8deb-c47c3b33e833",
+      "id": "f93c067f-7803-4f0b-9642-520c28f1542a",
       "name": "Respond to Webhook1"
     },
     {
@@ -217,15 +216,15 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
-        -160,
-        144
+        16,
+        416
       ],
-      "id": "30088580-f401-459c-9f24-a3090789bcaf",
+      "id": "9d2d596c-8a50-45b7-bdc5-6f73acaed0df",
       "name": "Analyze an image",
       "credentials": {
         "googlePalmApi": {
-          "id": "ZX3WWvD2O6rBruGC",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "B7BNw8d35qexZL4e",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -236,10 +235,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        144
+        336,
+        416
       ],
-      "id": "aec66653-3310-4c84-bf2e-eefabb849190",
+      "id": "adfa2749-1d41-44eb-b3b0-f8339d123a41",
       "name": "Code in JavaScript1"
     },
     {
@@ -262,14 +261,13 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        0,
-        256
+        176,
+        528
       ],
-      "id": "8653ac16-d58d-488a-9667-29a73dd87859",
+      "id": "9dbf7e52-82a6-4b88-9308-9b420ecd8772",
       "name": "HTTP Request1"
     }
   ],
-  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -377,17 +375,9 @@
       ]
     }
   },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "versionId": "6e1989b6-a131-498e-90aa-b0a0b8978a55",
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "27c1d5b9d1e9b368f9e1596b8e73e4a8409d87ab545c8d94609588c357270ed2"
-  },
-  "id": "yKC658rkbLy0I3KC",
-  "tags": []
+    "instanceId": "5e800c60375826af1de7b93b63154c0bce0d6dcaf55314468d99dbd2c84a41e3"
+  }
 }
