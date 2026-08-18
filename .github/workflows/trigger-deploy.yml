@@ -1,0 +1,54 @@
+# push 到 main 後，通知 CARE-infra 開始部署。
+#
+# n8n 的 workflow JSON 與 local_asr / local_parser 的原始碼都住在這個 repo，
+# 但實際部署由 CARE-infra 執行（helm chart、憑證、ConfigMap 都在那邊）。
+# 兩者之間沒有 webhook，所以靠 repository_dispatch 串起來。
+#
+# 2026-08-18 之前這個檔案不存在，改完 workflow 必須有人手動到 CARE-infra 按
+# Run workflow——而通常沒人記得，於是 repo 改好了、線上還跑著舊版，圖片辨識
+# 因此壞了兩週沒被發現。
+
+name: Trigger Deploy
+
+on:
+  push:
+    branches: [main]
+    # 只有真正影響部署結果的路徑才觸發。部署會重啟 n8n pod，
+    # 不該為了改 README 或測試而重啟。
+    paths:
+      - "resources/workflows/**"
+      - "local_asr/**"
+      - "local_parser/**"
+
+jobs:
+  trigger-infra-deploy:
+    runs-on: ubuntu-latest
+    env:
+      # secrets 不能直接寫在 step 的 if: 條件裡，先轉成 env 再判斷
+      HAS_TOKEN: ${{ secrets.INFRA_DEPLOY_TOKEN != '' }}
+    steps:
+      # token 缺席時給警告並跳過，而不是讓整個 job 變紅。
+      # CARE 與 CARE-LIFF 的同名 workflow 沒有這道保護，因此在
+      # INFRA_DEPLOY_TOKEN 未設定的期間，每次 push 都留下一次失敗紀錄
+      # （錯誤是 "Parameter token or opts.auth is required"），久了就沒人看。
+      - name: 檢查 INFRA_DEPLOY_TOKEN
+        if: env.HAS_TOKEN != 'true'
+        run: |
+          echo "::warning::INFRA_DEPLOY_TOKEN 未設定，略過部署通知。"
+          echo "::warning::請在此 repo 的 Settings → Secrets → Actions 加入該 token"
+          echo "::warning::（fine-grained PAT，對 Yanagi-0912/CARE-infra 需 Contents: Read and write）"
+          echo "::warning::在此之前，改動需手動到 CARE-infra 觸發 workflow_dispatch。"
+
+      - name: Dispatch deploy to CARE-infra
+        if: env.HAS_TOKEN == 'true'
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # tag v4.0.1
+        with:
+          token: ${{ secrets.INFRA_DEPLOY_TOKEN }}
+          repository: Yanagi-0912/CARE-infra
+          event-type: deploy
+          client-payload: |
+            {
+              "source": "n8n",
+              "ref": "main",
+              "sha": "${{ github.sha }}"
+            }
