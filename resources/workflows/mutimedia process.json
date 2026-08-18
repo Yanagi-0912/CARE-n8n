@@ -58,7 +58,7 @@
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 3
+                  "version": 2
                 },
                 "conditions": [
                   {
@@ -80,7 +80,7 @@
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 3
+                  "version": 2
                 },
                 "conditions": [
                   {
@@ -102,7 +102,7 @@
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 3
+                  "version": 2
                 },
                 "conditions": [
                   {
@@ -124,7 +124,7 @@
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 3
+                  "version": 2
                 },
                 "conditions": [
                   {
@@ -221,12 +221,7 @@
       ],
       "id": "9d2d596c-8a50-45b7-bdc5-6f73acaed0df",
       "name": "Analyze an image",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "B7BNw8d35qexZL4e",
-          "name": "Google Gemini(PaLM) Api account 2"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
