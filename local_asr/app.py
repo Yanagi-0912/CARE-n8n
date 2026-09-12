@@ -11,7 +11,10 @@ app = FastAPI(title="Local ASR", version="2.1.0")
 logger = logging.getLogger("local_asr")
 
 DEFAULT_MODEL_ID = "MediaTek-Research/Breeze-ASR-26"
-DEFAULT_ASR_BACKEND = "hybrid"
+# 預設只用 faster-whisper。hybrid 會在短音訊改走 Breeze-ASR-26，需要 torch／
+# transformers（預設映像不裝，見 pyproject.toml 的 breeze 群組）與遠超目前節點
+# 的記憶體；要用時明確設 ASR_BACKEND=hybrid。
+DEFAULT_ASR_BACKEND = "faster-whisper"
 DEFAULT_CHUNK_LENGTH_SECONDS = 30
 DEFAULT_LONG_AUDIO_THRESHOLD_SECONDS = 30.0
 DEFAULT_WHISPER_MODEL = "small"
@@ -167,7 +170,16 @@ class HybridAsrModel:
         self._short_model = None
         self._long_model: Optional[FasterWhisperAsrModel] = None
         if self.backend != "faster-whisper":
-            self._short_model = BreezeAsrModel()
+            try:
+                self._short_model = BreezeAsrModel()
+            except ImportError:
+                # 預設映像不裝 torch／transformers（見 pyproject.toml 的 breeze 群組）。
+                # 設了 hybrid 卻沒裝，就退回 faster-whisper，而不是讓每一則語音都 500。
+                logger.warning(
+                    "ASR_BACKEND=%s 需要 torch／transformers，映像未安裝，改用 faster-whisper",
+                    self.backend,
+                )
+                self.backend = "faster-whisper"
 
     def _get_faster_whisper_model(self) -> FasterWhisperAsrModel:
         if self._long_model is None:

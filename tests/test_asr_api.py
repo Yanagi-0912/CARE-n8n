@@ -60,6 +60,7 @@ def test_hybrid_asr_uses_breeze_for_short_audio(monkeypatch):
     monkeypatch.setattr(asr_app, "FasterWhisperAsrModel", FakeLongModel)
     monkeypatch.setattr(asr_app, "get_audio_duration_seconds", lambda _path: 3.12)
 
+    monkeypatch.setenv("ASR_BACKEND", "hybrid")
     hybrid = asr_app.HybridAsrModel()
     segments, info = hybrid.transcribe("dummy.wav", language="zh", task="transcribe")
 
@@ -89,6 +90,7 @@ def test_hybrid_asr_uses_faster_whisper_for_long_audio(monkeypatch):
     monkeypatch.setattr(asr_app, "FasterWhisperAsrModel", FakeLongModel)
     monkeypatch.setattr(asr_app, "get_audio_duration_seconds", lambda _path: 35.0)
 
+    monkeypatch.setenv("ASR_BACKEND", "hybrid")
     hybrid = asr_app.HybridAsrModel()
     segments, info = hybrid.transcribe("dummy.wav", language="nan", task="transcribe")
 
@@ -118,8 +120,59 @@ def test_hybrid_asr_backfills_duration_for_long_audio(monkeypatch):
     monkeypatch.setattr(asr_app, "FasterWhisperAsrModel", FakeLongModel)
     monkeypatch.setattr(asr_app, "get_audio_duration_seconds", lambda _path: 42.5)
 
+    monkeypatch.setenv("ASR_BACKEND", "hybrid")
     hybrid = asr_app.HybridAsrModel()
     _segments, info = hybrid.transcribe("dummy.wav", language="nan", task="transcribe")
 
     assert info.backend == "faster-whisper"
     assert info.duration == 42.5
+
+
+class _FakeFasterWhisper:
+    def transcribe(self, path, language=None, task="transcribe"):
+        return (
+            [SimpleNamespace(start=0.0, end=1.0, text="fw")],
+            SimpleNamespace(
+                language=language or "zh",
+                duration=1.0,
+                backend="faster-whisper",
+                model="small",
+            ),
+        )
+
+
+def test_default_backend_is_faster_whisper_even_for_short_audio(monkeypatch):
+    """預設映像不裝 torch：沒設 ASR_BACKEND 時連建都不能建 Breeze。"""
+
+    class ExplodingBreeze:
+        def __init__(self):
+            raise AssertionError("Breeze must not be constructed by default")
+
+    monkeypatch.delenv("ASR_BACKEND", raising=False)
+    monkeypatch.setattr(asr_app, "BreezeAsrModel", ExplodingBreeze)
+    monkeypatch.setattr(asr_app, "FasterWhisperAsrModel", _FakeFasterWhisper)
+    monkeypatch.setattr(asr_app, "get_audio_duration_seconds", lambda _path: 3.0)
+
+    model = asr_app.HybridAsrModel()
+    _segments, info = model.transcribe("dummy.wav", language="zh")
+
+    assert info.backend == "faster-whisper"
+
+
+def test_hybrid_falls_back_to_faster_whisper_without_torch(monkeypatch):
+    """設了 hybrid 但映像沒裝 torch：退回 faster-whisper，而不是每則語音都 500。"""
+
+    class NoTorchBreeze:
+        def __init__(self):
+            raise ImportError("No module named 'torch'")
+
+    monkeypatch.setenv("ASR_BACKEND", "hybrid")
+    monkeypatch.setattr(asr_app, "BreezeAsrModel", NoTorchBreeze)
+    monkeypatch.setattr(asr_app, "FasterWhisperAsrModel", _FakeFasterWhisper)
+    monkeypatch.setattr(asr_app, "get_audio_duration_seconds", lambda _path: 3.0)
+
+    model = asr_app.HybridAsrModel()
+    _segments, info = model.transcribe("dummy.wav", language="zh")
+
+    assert model.backend == "faster-whisper"
+    assert info.backend == "faster-whisper"

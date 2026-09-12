@@ -64,26 +64,34 @@ name = "care-n8n-local-asr"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "accelerate" },
     { name = "fastapi" },
     { name = "faster-whisper" },
     { name = "python-multipart" },
     { name = "requests" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.dev-dependencies]
+breeze = [
+    { name = "accelerate" },
     { name = "torch" },
     { name = "transformers" },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "accelerate", specifier = "==1.2.1" },
     { name = "fastapi", specifier = "==0.116.1" },
     { name = "faster-whisper", specifier = "==1.1.1" },
     { name = "python-multipart", specifier = "==0.0.20" },
     { name = "requests", specifier = "==2.32.3" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.35.0" },
+]
+
+[package.metadata.requires-dev]
+breeze = [
+    { name = "accelerate", specifier = "==1.2.1" },
     { name = "torch", specifier = "==2.5.1" },
     { name = "transformers", specifier = "==4.48.3" },
-    { name = "uvicorn", extras = ["standard"], specifier = "==0.35.0" },
 ]
 
 [[package]]

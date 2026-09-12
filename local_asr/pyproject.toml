@@ -11,6 +11,16 @@ dependencies = [
     "uvicorn[standard]==0.35.0",
     "python-multipart==0.0.20",
     "requests==2.32.3",
+]
+
+# Breeze-ASR-26（ASR_BACKEND=hybrid 的短音訊路徑）才需要 torch／transformers。
+# 預設不裝，映像只帶 faster-whisper：從 PyPI 裝的 torch 2.5.1 是含 CUDA 的版本，
+# lock 裡帶進 12 個 nvidia-* 套件與 triton，映像壓縮後 3.48 GB；2026-09-12 部署時
+# 把 K3s 節點磁碟從 84% 推到 95%，觸發驅逐、整站 502。Breeze 權重 6.17 GB，
+# fp32 在 CPU 上也放不進目前節點（總記憶體 7.8Gi）。要用 Breeze 時
+# `uv sync --group breeze`，並先確認節點記憶體與模型快取空間。
+[dependency-groups]
+breeze = [
     "torch==2.5.1",
     "transformers==4.48.3",
     "accelerate==1.2.1",
