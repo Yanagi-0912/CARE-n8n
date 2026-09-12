@@ -1,0 +1,20 @@
+[project]
+name = "care-n8n-local-asr"
+version = "0.1.0"
+description = "n8n 側的本地語音辨識服務（faster-whisper）"
+# 與 Dockerfile 的 python:3.11-slim-bookworm 一致
+requires-python = ">=3.11,<3.12"
+
+dependencies = [
+    "faster-whisper==1.1.1",
+    "fastapi==0.116.1",
+    "uvicorn[standard]==0.35.0",
+    "python-multipart==0.0.20",
+    "requests==2.32.3",
+    "torch==2.5.1",
+    "transformers==4.48.3",
+    "accelerate==1.2.1",
+]
+
+[tool.uv]
+package = false

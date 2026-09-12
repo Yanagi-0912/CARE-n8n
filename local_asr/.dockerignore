@@ -1,0 +1,6 @@
+# 本機 uv sync 產生的環境，映像內由 `uv sync --locked` 自己建，不該進 build context
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache

@@ -59,7 +59,21 @@ docker compose logs -f
 4. 啟用 workflow
 5. 使用 curl、Postman 或 client 測試 webhook
 
+## 單元測試
+
+相依由 [uv](https://docs.astral.sh/uv/) 管理（首次：`curl -LsSf https://astral.sh/uv/install.sh | sh`）。
+`tests/` 只跑 API 層，不需要模型權重、也不會啟動容器：
+
+```bash
+uv run pytest
+```
+
+兩個 sidecar 各自有獨立的 `pyproject.toml` 與 `uv.lock`（映像就照那份建），
+根目錄這份只供 `tests/` 使用，三者刻意不組成 uv workspace。
+
 ## 本機服務測試
+
+以下需要先 `docker compose up` 把服務跑起來。
 
 ### ASR health check
 

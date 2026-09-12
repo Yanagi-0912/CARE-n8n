@@ -1,0 +1,32 @@
+[project]
+name = "care-n8n"
+version = "0.1.0"
+description = "CARE 的 n8n 自架環境與本地 ASR／文件解析 sidecar"
+requires-python = ">=3.11,<3.12"
+# 這個根專案不出貨、也不被任何映像使用，只為了讓 tests/ 有可重現的執行環境。
+dependencies = []
+
+# 刻意不宣告 [tool.uv.workspace]：兩個 service 各自帶 uv.lock，Dockerfile 也只
+# COPY 自己那份。一旦組成 workspace，成員目錄下的 uv lock 會被導向根 lock，
+# 成員自己的 lock 就會無聲過期，而映像仍照那份過期的 lock 建置。
+
+# tests/ 只跑 API 層（conftest 以 FakeModel 取代模型，local_asr/app.py 的
+# faster-whisper／torch 是延遲載入，測試不需要它們）。
+# 這裡刻意不釘版本：釘了就等於把兩個 service 的 pin 抄第三份，改版時必然漂移。
+# 實際版本由本目錄的 uv.lock 鎖定，重現性不受影響。
+[dependency-groups]
+dev = [
+    "pytest",
+    "httpx",          # fastapi.testclient.TestClient 的底層
+    "fastapi",
+    "python-multipart",
+    # local_parser/app.py 在 import 期就會用到的解析器
+    "pypdf",
+    "python-docx",
+    "openpyxl",
+    "python-pptx",
+    "beautifulsoup4",
+]
+
+[tool.uv]
+package = false

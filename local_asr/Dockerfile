@@ -1,15 +1,27 @@
 FROM python:3.11-slim-bookworm
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# uv 以固定版本從官方映像複製進來，確保 build 可重現（不隨 latest 漂移）
+COPY --from=ghcr.io/astral-sh/uv:0.11.16 /uv /uvx /bin/
+
+ENV PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1 \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
 
 WORKDIR /app
 
-COPY requirements.txt .
+# ffmpeg 是 faster-whisper 解碼音檔用的系統相依，與 Python 套件分開安裝
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir -r requirements.txt
+    && rm -rf /var/lib/apt/lists/*
+
+# --locked：uv.lock 與 pyproject.toml 不一致就讓 build 失敗，而非默默重解版本
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev
+
+# 讓 uvicorn 直接可用，CMD 不必前綴 uv run
+ENV PATH="/app/.venv/bin:$PATH"
 
 COPY app.py .
 
