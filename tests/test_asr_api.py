@@ -176,3 +176,102 @@ def test_hybrid_falls_back_to_faster_whisper_without_torch(monkeypatch):
 
     assert model.backend == "faster-whisper"
     assert info.backend == "faster-whisper"
+
+
+# ---- 2026-09-14：語言提示、執行緒、重解碼、開機預載 ----
+# 真實 LINE 語音沒給語言時，small 模型判成緬甸語／日文而轉出亂碼；亂碼觸發
+# temperature 重解碼，9.7 秒語音在 2 核上轉了 133 秒（backend 等 120 秒就放棄）。
+# 同容器實測：cpu_threads=2 比預設快 26%（容器配額 2 核，預設開 4 條執行緒會被
+# 限速），beam_size=1 再快一些；關掉重解碼後同一段亂碼回到 12.9 秒。
+import sys
+import types
+
+import pytest
+
+
+class _RecordingWhisperModel:
+    instances: list = []
+
+    def __init__(self, model_size, **kwargs):
+        self.model_size = model_size
+        self.init_kwargs = kwargs
+        self.transcribe_kwargs = None
+        _RecordingWhisperModel.instances.append(self)
+
+    def transcribe(self, path, **kwargs):
+        self.transcribe_kwargs = kwargs
+        return (
+            [SimpleNamespace(start=0.0, end=1.0, text="好")],
+            SimpleNamespace(language=kwargs.get("language") or "zh", duration=1.0),
+        )
+
+
+def _install_fake_faster_whisper(monkeypatch):
+    _RecordingWhisperModel.instances = []
+    fake = types.ModuleType("faster_whisper")
+    fake.WhisperModel = _RecordingWhisperModel
+    monkeypatch.setitem(sys.modules, "faster_whisper", fake)
+
+
+def test_faster_whisper_defaults_two_threads_greedy_no_fallback(monkeypatch):
+    _install_fake_faster_whisper(monkeypatch)
+    monkeypatch.delenv("ASR_CPU_THREADS", raising=False)
+    monkeypatch.delenv("ASR_BEAM_SIZE", raising=False)
+
+    asr_app.FasterWhisperAsrModel().transcribe("dummy.wav", language="zh")
+
+    fw = _RecordingWhisperModel.instances[-1]
+    assert fw.init_kwargs["cpu_threads"] == 2
+    assert fw.transcribe_kwargs["beam_size"] == 1
+    assert fw.transcribe_kwargs["temperature"] == 0.0
+
+
+def test_faster_whisper_threads_and_beam_are_configurable(monkeypatch):
+    _install_fake_faster_whisper(monkeypatch)
+    monkeypatch.setenv("ASR_CPU_THREADS", "4")
+    monkeypatch.setenv("ASR_BEAM_SIZE", "5")
+
+    asr_app.FasterWhisperAsrModel().transcribe("dummy.wav")
+
+    fw = _RecordingWhisperModel.instances[-1]
+    assert fw.init_kwargs["cpu_threads"] == 4
+    assert fw.transcribe_kwargs["beam_size"] == 5
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [("zh-TW", "zh"), ("en", "en"), ("ID", "id"), ("", None), ("  ", None), (None, None)],
+)
+def test_transcribe_normalizes_care_language_codes(asr_client, monkeypatch, raw, expected):
+    """CARE 送的是 zh-TW 這種代碼；whisper 只認 zh。空值維持自動判斷。"""
+    seen = {}
+
+    class Capture:
+        def transcribe(self, path, language=None, task="transcribe"):
+            seen["language"] = language
+            return (
+                [SimpleNamespace(start=0.0, end=1.0, text="x")],
+                SimpleNamespace(language=language or "zh", duration=1.0, backend="fake", model="fake"),
+            )
+
+    monkeypatch.setattr(asr_app, "get_model", lambda: Capture())
+    data = {} if raw is None else {"language": raw}
+    r = asr_client.post("/transcribe", files={"file": ("a.m4a", b"abc", "audio/mp4")}, data=data)
+    assert r.status_code == 200
+    assert seen["language"] == expected
+
+
+def test_model_is_preloaded_at_startup(monkeypatch):
+    """第一則語音不該替模型載入買單（當天部署後第一則花了 63 秒）。"""
+    from fastapi.testclient import TestClient
+
+    calls = []
+
+    class Preloadable:
+        def preload(self):
+            calls.append("preload")
+
+    monkeypatch.setattr(asr_app, "get_model", lambda: Preloadable())
+    with TestClient(asr_app.app):
+        pass
+    assert calls == ["preload"]

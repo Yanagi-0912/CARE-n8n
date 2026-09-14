@@ -2,13 +2,25 @@ import os
 import logging
 import subprocess
 import tempfile
+from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from typing import Any, Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
-app = FastAPI(title="Local ASR", version="2.1.0")
 logger = logging.getLogger("local_asr")
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    # 開機就把模型載進記憶體。延遲載入時，部署後的第一則語音要替下載＋載入買單，
+    # 2026-09-14 那則 4 秒的語音因此等了 63 秒。載入失敗就讓啟動失敗：startupProbe
+    # （5 秒 × 30 次）會把問題顯示成 pod 起不來，而不是每則語音各自 500。
+    get_model().preload()
+    yield
+
+
+app = FastAPI(title="Local ASR", version="2.1.0", lifespan=_lifespan)
 
 DEFAULT_MODEL_ID = "MediaTek-Research/Breeze-ASR-26"
 # 預設只用 faster-whisper。hybrid 會在短音訊改走 Breeze-ASR-26，需要 torch／
@@ -19,6 +31,13 @@ DEFAULT_CHUNK_LENGTH_SECONDS = 30
 DEFAULT_LONG_AUDIO_THRESHOLD_SECONDS = 30.0
 DEFAULT_WHISPER_MODEL = "small"
 DEFAULT_WHISPER_COMPUTE_TYPE = "int8"
+# 以下兩個預設值來自 2026-09-14 在 care-vm（e2-standard-4）開同規格容器（2 核、2Gi）
+# 用同一段 10.6 秒語音實測：預設（4 條執行緒、beam 5）13.2 秒；cpu_threads=2 為 9.8 秒；
+# 再加 beam_size=1 為 9.2 秒。容器 CPU 配額只有 2 核，CTranslate2 預設依看得到的 4 顆
+# vCPU 開執行緒，結果 65% 的排程週期撞上配額被限速。把配額拉到 3、4 核也不會更快
+# （9.5／9.2～10.2 秒），這台 VM 的 4 vCPU 其實是 2 顆實體核心。
+DEFAULT_CPU_THREADS = 2
+DEFAULT_BEAM_SIZE = 1
 
 _MODEL: Optional["HybridAsrModel"] = None
 
@@ -128,11 +147,19 @@ class FasterWhisperAsrModel:
         self.compute_type = os.getenv(
             "WHISPER_COMPUTE_TYPE", DEFAULT_WHISPER_COMPUTE_TYPE
         )
-        self._model = WhisperModel(self.model_size, compute_type=self.compute_type)
+        self.cpu_threads = int(os.getenv("ASR_CPU_THREADS", str(DEFAULT_CPU_THREADS)))
+        self.beam_size = int(os.getenv("ASR_BEAM_SIZE", str(DEFAULT_BEAM_SIZE)))
+        self._model = WhisperModel(
+            self.model_size,
+            compute_type=self.compute_type,
+            cpu_threads=self.cpu_threads,
+        )
         logger.info(
-            "faster-whisper initialized model=%s compute_type=%s",
+            "faster-whisper initialized model=%s compute_type=%s cpu_threads=%s beam_size=%s",
             self.model_size,
             self.compute_type,
+            self.cpu_threads,
+            self.beam_size,
         )
 
     def transcribe(
@@ -145,6 +172,11 @@ class FasterWhisperAsrModel:
             path,
             language=language or None,
             task=task,
+            beam_size=self.beam_size,
+            # 關掉 temperature 重解碼。預設遇到亂碼會換溫度重來最多 6 輪，同一段 9.7 秒
+            # 的語音因此從 12.9 秒拖到 133 秒，超過 backend 的 120 秒逾時。語言對了本來就
+            # 很少觸發；語言錯了重來也救不回來，只會更慢。
+            temperature=0.0,
         )
         normalized_segments = [
             SimpleNamespace(start=seg.start, end=seg.end, text=seg.text) for seg in segments
@@ -180,6 +212,10 @@ class HybridAsrModel:
                     self.backend,
                 )
                 self.backend = "faster-whisper"
+
+    def preload(self) -> None:
+        """開機時先把 faster-whisper 載進記憶體；hybrid 的 Breeze 已在 __init__ 建好。"""
+        self._get_faster_whisper_model()
 
     def _get_faster_whisper_model(self) -> FasterWhisperAsrModel:
         if self._long_model is None:
@@ -250,6 +286,14 @@ def _normalize_timestamp(value: Any) -> tuple[float, float]:
     return start, end
 
 
+def _normalize_language(language: Optional[str]) -> Optional[str]:
+    """CARE 送的是 zh-TW 這類代碼，whisper 只認主語言碼 zh；空白視為沒給，交給模型判斷。"""
+    code = (language or "").strip()
+    if not code:
+        return None
+    return code.split("-")[0].lower()
+
+
 def get_model() -> HybridAsrModel:
     global _MODEL
     if _MODEL is None:
@@ -290,7 +334,9 @@ async def transcribe(
 
     try:
         model = get_model()
-        segments, info = model.transcribe(tmp_path, language=language, task=task)
+        segments, info = model.transcribe(
+            tmp_path, language=_normalize_language(language), task=task
+        )
         text_parts = []
         segment_list = []
         for seg in segments:

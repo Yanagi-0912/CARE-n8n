@@ -38,7 +38,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const binaryData = $input.item.binary;\nconst outputItems = [];\n\nfor (const key in binaryData) {\n    if (binaryData.hasOwnProperty(key)) {\n        const file = binaryData[key];\n        const fileName = file.fileName;\n        let fileExtension = '';\n        let fileBaseName = fileName;\n\n        // 取副檔名\n        const lastDotIndex = fileName.lastIndexOf('.');\n        if (lastDotIndex !== -1 && lastDotIndex < fileName.length - 1) {\n            fileExtension = fileName.substring(lastDotIndex + 1).toLowerCase();\n            fileBaseName = fileName.substring(0, lastDotIndex);\n        }\n\n        // 將結果添加到輸出\n        outputItems.push({\n            json: {\n                originalFileName: fileName,\n                fileBaseName: fileBaseName,\n                fileExtension: fileExtension,\n            },\n            binary: { [key]: file }\n        });\n    }\n}\n\nreturn outputItems;"
+        "jsCode": "const binaryData = $input.item.binary;\nconst outputItems = [];\n\nfor (const key in binaryData) {\n    if (binaryData.hasOwnProperty(key)) {\n        const file = binaryData[key];\n        const fileName = file.fileName;\n        let fileExtension = '';\n        let fileBaseName = fileName;\n\n        // 取副檔名\n        const lastDotIndex = fileName.lastIndexOf('.');\n        if (lastDotIndex !== -1 && lastDotIndex < fileName.length - 1) {\n            fileExtension = fileName.substring(lastDotIndex + 1).toLowerCase();\n            fileBaseName = fileName.substring(0, lastDotIndex);\n        }\n\n        // 將結果添加到輸出\n        outputItems.push({\n            json: {\n                originalFileName: fileName,\n                fileBaseName: fileBaseName,\n                fileExtension: fileExtension,\n                // backend 以表單欄位送來使用者設定的語言（zh-TW、id…），轉給 local-asr\n                // 當語言提示；沒送時為空字串，local-asr 會退回自動判斷。\n                language: ($input.item.json.body && $input.item.json.body.language) || '',\n            },\n            binary: { [key]: file }\n        });\n    }\n}\n\nreturn outputItems;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -168,6 +168,11 @@
               "parameterType": "formBinaryData",
               "name": "file",
               "inputDataFieldName": "file"
+            },
+            {
+              "parameterType": "formData",
+              "name": "language",
+              "value": "={{ $json.language }}"
             }
           ]
         },
