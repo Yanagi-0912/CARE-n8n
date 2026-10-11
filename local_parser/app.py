@@ -2,13 +2,14 @@ import csv
 import io
 import json
 import os
+import re
 from typing import Any, Callable, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 from docx import Document
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from openpyxl import load_workbook
-from pypdf import PdfReader
+from pdf_inspector import extract_pages_markdown_bytes
 from pptx import Presentation
 
 app = FastAPI(title="Local Document Parser", version="1.0.0")
@@ -57,13 +58,33 @@ def _parse_json(content: bytes) -> str:
     return json.dumps(obj, ensure_ascii=False, indent=2)
 
 
+# 整份 PDF 都讀不到字時回這句。後端 media_handler 認得這個開頭，會跟使用者說
+# 讀不到內容；回空字串反而不行——n8n 的 Respond to Webhook 會送出一個空白，
+# 後端會當成服務壞掉。
+NO_PDF_TEXT = "Unable to extract text from PDF (scanned or image-only pages)"
+
+# 緊貼在字下方的橫線（例如表格的上框線）會被 pdf-inspector 認成底線而輸出
+# <u>…</u>；下游是給模型讀、做向量，底線沒有用處。
+_UNDERLINE_TAG = re.compile(r"</?u>")
+
+
 def _parse_pdf(content: bytes) -> str:
-    reader = PdfReader(io.BytesIO(content))
+    result = extract_pages_markdown_bytes(content)
     pages: List[str] = []
-    for idx, page in enumerate(reader.pages, start=1):
-        page_text = page.extract_text() or ""
-        pages.append(f"[Page {idx}]\n{page_text.strip()}")
-    return "\n\n".join(pages).strip()
+    unread: List[str] = []
+    for page in result.pages:
+        number = page.page + 1
+        if page.needs_ocr:
+            unread.append(str(number))
+        page_text = _UNDERLINE_TAG.sub("", page.markdown).strip()
+        if page_text:
+            pages.append(f"[Page {number}]\n{page_text}")
+    if not pages:
+        return NO_PDF_TEXT
+    # 掃描頁不做 OCR；註明哪幾頁沒讀到，模型才不會把缺的部分說成文件裡沒寫
+    if unread:
+        pages.append(f"（第 {'、'.join(unread)} 頁是掃描或圖片，文字沒有讀到或不完整）")
+    return "\n\n".join(pages)
 
 
 def _parse_docx(content: bytes) -> str:

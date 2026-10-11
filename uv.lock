@@ -47,7 +47,7 @@ dev = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openpyxl" },
-    { name = "pypdf" },
+    { name = "pdf-inspector" },
     { name = "pytest" },
     { name = "python-docx" },
     { name = "python-multipart" },
@@ -62,7 +62,7 @@ dev = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openpyxl" },
-    { name = "pypdf" },
+    { name = "pdf-inspector" },
     { name = "pytest" },
     { name = "python-docx" },
     { name = "python-multipart" },
@@ -217,6 +217,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pdf-inspector"
+version = "1.25.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/93/1c6e6a34084795a9749e091cb847fe94135dc4e1f50ad502d931490a31c5/pdf_inspector-1.25.2.tar.gz", hash = "sha256:227537eb91c8afbcd995c386ff5e10683286f3b44e6d385e143304255f72ee92", size = 2120655, upload-time = "2026-09-28T07:04:12.818Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b6/47/e89568d0c30e6edb2640490fca6979fc8c8888901aab31a13d8ea22ee634/pdf_inspector-1.25.2-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:9762bb04a82d72667201fe54aaadcf2f4f10ff7e7fd56cbfa09fbf969feedc4b", size = 6349883, upload-time = "2026-09-28T07:04:04.462Z" },
+    { url = "https://files.pythonhosted.org/packages/02/99/866fa4c3c45ee449abda4623283c2e27d60ce565eea98901d9e2131dc36b/pdf_inspector-1.25.2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:7664d87d400c2b4057b6e5d3897954a21d4a0eec6883062e970fa42d75761da5", size = 6057124, upload-time = "2026-09-28T07:04:06.205Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/b4/59f2e2da96045267960255958bd8c152f8001de7250583bad3f6eb6268a3/pdf_inspector-1.25.2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:436e620154b0d8f2a3648acb52a1ce169333a5bd0dd4e8988ce159f17d40adc4", size = 6620814, upload-time = "2026-09-28T07:04:07.792Z" },
+    { url = "https://files.pythonhosted.org/packages/29/5c/2009e2183eeb531e5b39e7f9a4684570bed429a6f24cc8140f7129600fd2/pdf_inspector-1.25.2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0a2596febc67d1177d1dc3e58e2d364be03c33f4e3180c13367d1918cb17d018", size = 6881039, upload-time = "2026-09-28T07:04:09.375Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/6b/657fecf326b738e1ddf9d8779bc70d24fab70aed78f1e43859623760354e/pdf_inspector-1.25.2-cp38-abi3-win_amd64.whl", hash = "sha256:35474ed3d57972a7eac54b63c11901d3561e7723a1c84785ede5d8c15590a64c", size = 6185296, upload-time = "2026-09-28T07:04:11.042Z" },
+]
+
+[[package]]
 name = "pillow"
 version = "12.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -307,15 +320,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/49/2e/ced460408999b33da6b31b0021b0f37d329e202d4169aeb164493778f25b/pygments-2.21.0.tar.gz", hash = "sha256:610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c", size = 5005329, upload-time = "2026-08-17T08:02:48.824Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/71/46/17f022dd3e953bf20a04a028a21ec746d942f8d2af30fa0f124fa0e6a684/pygments-2.21.0-py3-none-any.whl", hash = "sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9", size = 1250147, upload-time = "2026-08-17T08:02:44.912Z" },
-]
-
-[[package]]
-name = "pypdf"
-version = "5.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6b/9a/72d74f05f64895ebf1c7f6646cf7fe6dd124398c5c49240093f92d6f0fdd/pypdf-5.1.0.tar.gz", hash = "sha256:425a129abb1614183fd1aca6982f650b47f8026867c0ce7c4b9f281c443d2740", size = 5011381, upload-time = "2024-10-27T19:46:47.002Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/fc/6f52588ac1cb4400a7804ef88d0d4e00cfe57a7ac6793ec3b00de5a8758b/pypdf-5.1.0-py3-none-any.whl", hash = "sha256:3bd4f503f4ebc58bae40d81e81a9176c400cbbac2ba2d877367595fb524dfdfc", size = 297976, upload-time = "2024-10-27T19:46:44.439Z" },
 ]
 
 [[package]]

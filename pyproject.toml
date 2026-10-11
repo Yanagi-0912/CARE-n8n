@@ -21,7 +21,7 @@ dev = [
     "fastapi",
     "python-multipart",
     # local_parser/app.py 在 import 期就會用到的解析器
-    "pypdf",
+    "pdf-inspector",
     "python-docx",
     "openpyxl",
     "python-pptx",
